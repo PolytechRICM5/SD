@@ -1,0 +1,24 @@
+Algorithme qui classe un set de données en deux classe (+1, -1)
+en utilisant un hyperplan de l'espace séparateur.
+
+Entrée :        S = (xi, yi) 1<=i<=m
+                Un # max d'itérations : T
+                Un pas d'apprentissage : mu
+Initialisation :        w0(1) <- 0
+                        Rd inclus w(1) <- o->
+
+for t = 1..T
+        for i = 1..m
+                if( yi(w0(t) + <w(t),xi>) <= 0 )
+                        w0(t+1) <- w0(t) + mu.yi
+                        w(t+1) <- w(t) + mu.xi.yi
+return w0(T+1), 
+
+
+http://archive.ics.uci.edu/ml/
+
+Collections :
+        1) Iris
+        But : Apprendre à classer les iris setosa des deux autres espéces.
+                a) Prendre la base et la transformer de façons à avoir les vecteurs des iris setosa en classe +1 et les autres en  -1
+                b) séparer la base en deux de façon aléatoire en prenant 2/3 pour l'apprentissage le reste pour le test. (pour évaluer les resultat -> moyenne d'erreur)
