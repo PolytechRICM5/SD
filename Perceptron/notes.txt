@@ -34,13 +34,15 @@ Test :
 Choix du meilleur eta (hyperparamètre)
 par validation croisée
         * Diviser S en k ss-ensembles
-        * pour eta dans {10⁻3, 10⁻2, 10⁻1, 10⁰,10¹,10²,10³}
+        * pour eta dans {10⁻³, 10⁻², 10⁻¹, 10⁰, 10¹, 10², 10³}
                 Apprendre K modèles de perceptron sur (K-1) parties de S
                 Tester sur la partie restante (pas dans les K-1)
                 Faire la moyenne des perfs et prendre le etat ou perf meilleure.
 
 
 Apprendre le perceptron sur la totalité de S avec le eta ayant la meilleure perf.
+
+----
 
 Tester l'algo en prennant en compte une partie de S
 
@@ -56,7 +58,7 @@ for i = 1..N
 output perf/N (pourcentage)
 
 ** >
-<(w0t, w1t, w2t, ..., wdt), (1, xi1, xi2, ... xid)>
-= w0t + SUM[j=1..d](wjt*xij)
+<(w0(t), w1(t), w2(t), ..., wd(t)), (1, xi1, xi2, ... xid)>
+= w0(t) + SUM[j=1..d](wj(t)*xij)
 
 Choix du meilleur hyperparamètre eta € {10e-3, 10e-2, ..., 10e3} avec cross-validation
