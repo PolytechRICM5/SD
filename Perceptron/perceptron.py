@@ -38,7 +38,7 @@ def getCancer () :
             line_tab[1] = "-1"
         lines.append(line_tab)
     return np.array(lines, dtype=float) # Convertir le contenu du tableau en float
-    
+
 # S la base d'apprentissage
 # T le nombre max d'itérations
 # eta le pas d'apprentissage
