@@ -8,7 +8,6 @@ import numpy as np
 
 # Tout d'abord nous allons modifier le fichier iris.data de sorte que les iris-setosa appartiennent à la classe +1
 # et que les autres à la classe -1
-
 def getIris () :
     fname = "iris.data"
     f = open(fname, "r")
@@ -56,6 +55,7 @@ def choixEta(S,k) :
     eta_range = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
     res = []
     for eta in eta_range :
+        for i in k :
         print "Résultat pour eta = " + eta
 
 
