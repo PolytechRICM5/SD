@@ -41,3 +41,22 @@ par validation croisée
 
 
 Apprendre le perceptron sur la totalité de S avec le eta ayant la meilleure perf.
+
+Tester l'algo en prennant en compte une partie de S
+
+Entrées :
+  Test St = (xi, yi) 1<=i<=N
+  wt
+
+perf = 0 **
+for i = 1..N
+  if yi(<wt, xi>) > 0
+    perf += 1
+
+output perf/N (pourcentage)
+
+** >
+<(w0t, w1t, w2t, ..., wdt), (1, xi1, xi2, ... xid)>
+= w0t + SUM[j=1..d](wjt*xij)
+
+Choix du meilleur hyperparamètre eta € {10e-3, 10e-2, ..., 10e3} avec cross-validation
