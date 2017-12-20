@@ -31,12 +31,28 @@ def getCancer () :
     for line in f :
         line = line.strip("\n")
         line_tab = line.split(",")
-        line_tab = line_tab[1:]
+        res = line_tab[2:] + [0]
         if line_tab[1] == "M" :
-            line_tab[1] = "+1"
+            res[len(res)-1] = "+1"
         else :
-            line_tab[1] = "-1"
-        lines.append(line_tab)
+            res[len(res)-1] = "-1"
+        lines.append(res)
+    return np.array(lines, dtype=float) # Convertir le contenu du tableau en float
+
+def getWine () :
+    fname = "wine.data"
+    f = open(fname, "r")
+    lines = []
+    for line in f :
+        line = line.strip("\n")
+        line_tab = line.split(",")
+        line_tab = line_tab[1:]
+        res = line_tab[1:] + [0]
+        if line_tab[0] == "1" :
+            res[len(res)-1] = "+1"
+        else :
+            res[len(res)-1] = "-1"
+        lines.append(res)
     return np.array(lines, dtype=float) # Convertir le contenu du tableau en float
 
 # S la base d'apprentissage
@@ -99,9 +115,8 @@ def choixEta(S,k,T) :
 
 
 # Récupération des données, mélange et répartition en un set de test et un set d'apprentissage
-data = getIris()
+data = getCancer()
 random.shuffle(data)
-print data
 cut = len(data)/3
 test_list = data[0:cut]
 learn_list = data[cut:len(data)]
@@ -111,6 +126,7 @@ T = 10 * cut
 wT = perceptron(learn_list,T,0.1)
 perf = testPerceptron(test_list,wT)
 print wT
+print perf
 choixEta(data,10,T)
 
 # http://www.pythonforbeginners.com/files/reading-and-writing-files-in-python
