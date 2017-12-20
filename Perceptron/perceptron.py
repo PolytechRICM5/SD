@@ -3,6 +3,7 @@
 
 import random
 import numpy as np
+from operator import add
 
 # Implémentation de l'algorithme de Perceptron pour classifier des données en deux classes
 
@@ -22,56 +23,94 @@ def getIris () :
         lines.append(line_tab)
     return np.array(lines, dtype=float) # Convertir le contenu du tableau en float
 
+
+def getCancer () :
+    fname = "cancer.data"
+    f = open(fname, "r")
+    lines = []
+    for line in f :
+        line = line.strip("\n")
+        line_tab = line.split(",")
+        line_tab = line_tab[1:]
+        if line_tab[1] == "M" :
+            line_tab[1] = "+1"
+        else :
+            line_tab[1] = "-1"
+        lines.append(line_tab)
+    return np.array(lines, dtype=float) # Convertir le contenu du tableau en float
+    
 # S la base d'apprentissage
 # T le nombre max d'itérations
 # eta le pas d'apprentissage
 def perceptron (S, T, eta) :
     size_of_space = len(S[0]) -1
-    w0 = np.zeros((T+1,1))
-    w = np.zeros((T+1,size_of_space))
+    w = [0] * (size_of_space + 1)
     for t in range(0,T) :
-        for i in range(0,len(S)) :
-            yi = S[i][size_of_space]
-            if  yi * (w0[t] + np.dot(w[t], S[i][0:size_of_space])) <= 0 :
-                w0[t+1] = w0[t] + eta * yi
-                w[t+1] = w[t] + eta * S[i][0:size_of_space] * yi
-    return w[T]
+        i = random.randint(0,len(S)-1)
+        yi = S[i][size_of_space]
+        xi = [1] + list(S[i][0:size_of_space])
+        if  (yi * np.dot(w, xi) ) <= 0 :
+            w = map(add, w, [i * eta * yi for i in xi])
+    return w
 
 # BT la base de test
 # wT le résultat du perceptron
 def testPerceptron(BT, wT) :
     size_of_space = len(BT[0]) -1
-    perf = 0
+    perf = 0.0
     for i in range(0,len(BT)) :
         yi = BT[i][size_of_space]
-        if yi * np.dot(wT, BT[i][0:size_of_space]) :
-            perf += 1
-    return perf/len(BT)
+        xi = [1] + list(BT[i][0:size_of_space])
+        if (yi * np.dot(wT, xi)) > 0 :
+            perf += 1.0
+    return perf/float(len(BT))
 
 # S le set de données
 # k le nombre de sous-ensembles sur lesquels faire la cross-validation
-def choixEta(S,k) :
+# T le nombre de pas
+def choixEta(S,k,T) :
     size = len(S)
     eta_range = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
-    res = []
-    for eta in eta_range :
-        for i in k :
-        print "Résultat pour eta = " + eta
+    res = np.zeros((7,1))
+    data = np.array((k,2))
+    cut_size = size / k
+
+    for step in range(0,k) :
+        cut = step * cut_size
+        print cut
+        test_list = S[cut:cut+cut_size]
+        learn_list = np.vstack((S[0:cut], S[cut+cut_size:size])) #vstack concatenates the arrays of arrays
+        i = 0
+        for eta in eta_range :
+            wT = perceptron(learn_list,T,eta)
+            res[i] += testPerceptron(test_list,wT)
+            i += 1
+
+    best_perf = max(res)
+    i = 0
+    retour = []
+    for perf in res :
+        if perf == best_perf :
+            retour = retour + [eta_range[i]]
+        i += 1
+    print retour
+    #print "Résultat pour eta = " + str(eta)
 
 
 
 # Récupération des données, mélange et répartition en un set de test et un set d'apprentissage
 data = getIris()
 random.shuffle(data)
+print data
 cut = len(data)/3
 test_list = data[0:cut]
 learn_list = data[cut:len(data)]
 
 # Lancement de l'algorithme de perceptron renvoyant w0 et w.
-res = perceptron(learn_list,100,0.1)
-perf = testPerceptron(test_list,res)
-print res
-print perf
-choixEta(data,4)
+T = 10 * cut
+wT = perceptron(learn_list,T,0.1)
+perf = testPerceptron(test_list,wT)
+print wT
+choixEta(data,10,T)
 
 # http://www.pythonforbeginners.com/files/reading-and-writing-files-in-python
