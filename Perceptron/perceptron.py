@@ -7,6 +7,14 @@ from operator import add
 
 # Implémentation de l'algorithme de Perceptron pour classifier des données en deux classes
 
+def normalize(a) :
+    size = a.shape[1]
+    maxs = a.max(axis=0)
+    np.append(maxs,[1])
+    print maxs
+    normalized = a/maxs
+    return normalized
+
 # Tout d'abord nous allons modifier le fichier iris.data de sorte que les iris-setosa appartiennent à la classe +1
 # et que les autres à la classe -1
 def getIris () :
@@ -21,16 +29,10 @@ def getIris () :
         else :
             line_tab[4] = "-1"
         lines.append(line_tab)
-    return np.array(lines, dtype=float) # Convertir le contenu du tableau en float
+    mon_set =  np.array(lines, dtype=float) # Convertir le contenu du tableau en float
+    return normalize(mon_set)
 
 
-def normalize(a) :
-    size = a.shape[1]
-    maxs = a.max(axis=0)
-    np.append(maxs,[1])
-    print maxs
-    normalized = a/maxs
-    return normalized
 
 def getCancer () :
     fname = "cancer.data"
@@ -56,7 +58,7 @@ def getMushroom() :
         line = line.strip("\n")
         line_tab = line.split(",")
         res = line_tab[1:] + ["e"]
-        res = map(lambda x : (ord(x) - 96), res)
+        res = map(lambda x : (ord(x) - 96)/33., res)
         if line_tab[0] == "e" :
             res[len(res)-1] = "+1"
         else :
@@ -125,6 +127,11 @@ def L(w,S) :
         somme = somme + pow(hw(w,xi) - yi ,2)
     return somme/m
 
+def initw(size) :
+    w = [0.] * size
+    for i in range(1,size) :
+        w[i] = random.randint(0,100)/100.
+    return w
 
 # S la base d'apprentissage
 # T le nombre maximum d'itérations
@@ -132,7 +139,8 @@ def L(w,S) :
 # E la précision
 def adaline(S, T, eta, E) :
     size_of_space = len(S[0]) -1
-    w = [random.randint(0,100)/100.] * (size_of_space + 1)
+    w = initw(size_of_space+1)
+    print w
     t = 0
     condition = True
     while condition :
@@ -143,14 +151,12 @@ def adaline(S, T, eta, E) :
         #Mettre à jour les poids
         w2 = [0] * (size_of_space + 1)
         w2[0] = w[0] - 2*eta*(hw(w, xi)-yi)
-        for j in range(1, size_of_space) :
-            xj = S[j][0:size_of_space]
-            w2[j] = w[j] - 2*eta*xj*(hw(w, xi)-yi)
+        w2[1:] = w[1:] - 2*eta*xi*(hw(w, xi)-yi)
         t = t+1
         condition = t < T and abs(L(w2, S) - L(w, S)) > E
         w = w2
     return w
-    
+
 # BT la base de test
 # wT le résultat du perceptron
 def testPerceptron(BT, wT) :
@@ -195,7 +201,7 @@ def choixEta(S,k,T) :
 
 
 # Récupération des données, mélange et répartition en un set de test et un set d'apprentissage
-data = getIris()
+data = getSpamBase()
 random.shuffle(data)
 cut = len(data)/3
 test_list = data[0:cut]
@@ -212,5 +218,7 @@ print perf
 print "ADALINE"
 wT = adaline(learn_list, T, 0.1, 100)
 print wT
+perf = testPerceptron(test_list,wT)
+print perf
 
 # http://www.pythonforbeginners.com/files/reading-and-writing-files-in-python
