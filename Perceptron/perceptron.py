@@ -112,6 +112,45 @@ def perceptron (S, T, eta) :
             w = map(add, w, [i * eta * yi for i in xi])
     return w
 
+def hw(w,x) :
+    return w[0] + np.dot(w[1:], x)
+
+def L(w,S) :
+    size_of_space = len(S[0])-1
+    m = len(S)
+    somme = 0
+    for i in range(1,m) :
+        xi = S[i][0:size_of_space]
+        yi = S[i][size_of_space]
+        somme = somme + pow(hw(w,xi) - yi ,2)
+    return somme/m
+
+
+# S la base d'apprentissage
+# T le nombre maximum d'itérations
+# eta le pas d'apprentissage
+# E la précision
+def adaline(S, T, eta, E) :
+    size_of_space = len(S[0]) -1
+    w = [random.randint(0,100)/100.] * (size_of_space + 1)
+    t = 0
+    condition = True
+    while condition :
+        # Choisir un exemple au hasard
+        i = random.randint(0,len(S)-1)
+        yi = S[i][size_of_space]
+        xi = S[i][0:size_of_space]
+        #Mettre à jour les poids
+        w2 = [0] * (size_of_space + 1)
+        w2[0] = w[0] - 2*eta*(hw(w, xi)-yi)
+        for j in range(1, size_of_space) :
+            xj = S[j][0:size_of_space]
+            w2[j] = w[j] - 2*eta*xj*(hw(w, xi)-yi)
+        t = t+1
+        condition = t < T and abs(L(w2, S) - L(w, S)) > E
+        w = w2
+    return w
+    
 # BT la base de test
 # wT le résultat du perceptron
 def testPerceptron(BT, wT) :
@@ -164,10 +203,14 @@ learn_list = data[cut:len(data)]
 
 # Lancement de l'algorithme de perceptron renvoyant w0 et w.
 T = 10 * cut
+print "Perceptron"
 wT = perceptron(learn_list,T,0.1)
 perf = testPerceptron(test_list,wT)
 print wT
 print perf
-choixEta(data,10,T)
+#choixEta(data,10,T)
+print "ADALINE"
+wT = adaline(learn_list, T, 0.1, 100)
+print wT
 
 # http://www.pythonforbeginners.com/files/reading-and-writing-files-in-python
