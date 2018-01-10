@@ -62,3 +62,21 @@ output perf/N (pourcentage)
 = w0(t) + SUM[j=1..d](wj(t)*xij)
 
 Choix du meilleur hyperparamètre eta € {10e-3, 10e-2, ..., 10e3} avec cross-validation
+
+
+-----
+
+Tableau de compraraison
+
+PBC                       Iris    Autre set
+Perceptron
+Adaline
+Regresssion logistiques
+
+Pour les deux classes d'IRIS, linéairement separables par le Perceptron
+* Calculer R = max(x dans S) ||x||
+avec ||x|| = sqrt ( x1² + x2² + .. + xn² )
+
+Sur la solution trouvée par le perceptron w*
+
+rho = min (i dans 1..m) yi * (w0t + <wT + xi>) / ||w*||

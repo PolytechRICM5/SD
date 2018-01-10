@@ -24,6 +24,14 @@ def getIris () :
     return np.array(lines, dtype=float) # Convertir le contenu du tableau en float
 
 
+def normalize(a) :
+    size = a.shape[1]
+    maxs = a.max(axis=0)
+    np.append(maxs,[1])
+    print maxs
+    normalized = a/maxs
+    return normalized
+
 def getCancer () :
     fname = "cancer.data"
     f = open(fname, "r")
@@ -37,7 +45,40 @@ def getCancer () :
         else :
             res[len(res)-1] = "-1"
         lines.append(res)
-    return np.array(lines, dtype=float) # Convertir le contenu du tableau en float
+    mon_set = np.array(lines, dtype=float) # Convertir le contenu du tableau en float
+    return normalize(mon_set)
+
+def getMushroom() :
+    fname = "agaricus-lepiota.data"
+    f = open(fname, "r")
+    lines = []
+    for line in f :
+        line = line.strip("\n")
+        line_tab = line.split(",")
+        res = line_tab[1:] + ["e"]
+        res = map(lambda x : (ord(x) - 96), res)
+        if line_tab[0] == "e" :
+            res[len(res)-1] = "+1"
+        else :
+            res[len(res)-1] = "-1"
+        lines.append(res)
+    mon_set = np.array(lines, dtype=float) # Convertir le contenu du tableau en float
+    return mon_set
+
+def getSpamBase() :
+    fname = "spambase.data"
+    f = open(fname, "r")
+    lines = []
+    for line in f :
+        line = line.strip("\n")
+        line_tab = line.split(",")
+        if int(line_tab[len(line_tab)-1]) == 1 :
+            line_tab[len(line_tab)-1] = "+1"
+        else :
+            line_tab[len(line_tab)-1] = "-1"
+        lines.append(line_tab)
+    mon_set = np.array(lines, dtype=float) # Convertir le contenu du tableau en float
+    return normalize(mon_set)
 
 def getWine () :
     fname = "wine.data"
@@ -55,6 +96,8 @@ def getWine () :
         lines.append(res)
     return np.array(lines, dtype=float) # Convertir le contenu du tableau en float
 
+
+
 # S la base d'apprentissage
 # T le nombre max d'itérations
 # eta le pas d'apprentissage
@@ -65,7 +108,7 @@ def perceptron (S, T, eta) :
         i = random.randint(0,len(S)-1)
         yi = S[i][size_of_space]
         xi = [1] + list(S[i][0:size_of_space])
-        if  (yi * np.dot(w, xi) ) <= 0 :
+        if  (yi * np.dot(w, xi)) <= 0 :
             w = map(add, w, [i * eta * yi for i in xi])
     return w
 
@@ -93,7 +136,6 @@ def choixEta(S,k,T) :
 
     for step in range(0,k) :
         cut = step * cut_size
-        print cut
         test_list = S[cut:cut+cut_size]
         learn_list = np.vstack((S[0:cut], S[cut+cut_size:size])) #vstack concatenates the arrays of arrays
         i = 0
@@ -109,13 +151,12 @@ def choixEta(S,k,T) :
         if perf == best_perf :
             retour = retour + [eta_range[i]]
         i += 1
-    print retour
-    #print "Résultat pour eta = " + str(eta)
+    print "Résultat pour eta = " + str(retour)
 
 
 
 # Récupération des données, mélange et répartition en un set de test et un set d'apprentissage
-data = getCancer()
+data = getIris()
 random.shuffle(data)
 cut = len(data)/3
 test_list = data[0:cut]
