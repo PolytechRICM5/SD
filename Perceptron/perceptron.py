@@ -5,14 +5,17 @@ import random
 import numpy as np
 from operator import add
 
-# Implémentation de l'algorithme de Perceptron pour classifier des données en deux classes
+# Implémentation de différents algorithme pour classifier des données en deux classes
 
 def normalize(a) :
     size = a.shape[1]
     maxs = a.max(axis=0)
+    mins = a.min(axis=0)
     np.append(maxs,[1])
-    print maxs
-    normalized = a/maxs
+    print mins
+    normalized = (a-mins)/(maxs-mins)
+    print (normalized > 1).sum()
+    print (normalized < 0).sum()
     return normalized
 
 # Tout d'abord nous allons modifier le fichier iris.data de sorte que les iris-setosa appartiennent à la classe +1
@@ -31,8 +34,6 @@ def getIris () :
         lines.append(line_tab)
     mon_set =  np.array(lines, dtype=float) # Convertir le contenu du tableau en float
     return normalize(mon_set)
-
-
 
 def getCancer () :
     fname = "cancer.data"
@@ -114,10 +115,13 @@ def perceptron (S, T, eta) :
             w = map(add, w, [i * eta * yi for i in xi])
     return w
 
+
+# ADALINE
+
 def hw(w,x) :
     return w[0] + np.dot(w[1:], x)
 
-def L(w,S) :
+def L_adaline(w,S) :
     size_of_space = len(S[0])-1
     m = len(S)
     somme = 0
@@ -140,7 +144,6 @@ def initw(size) :
 def adaline(S, T, eta, E) :
     size_of_space = len(S[0]) -1
     w = initw(size_of_space+1)
-    print w
     t = 0
     condition = True
     while condition :
@@ -153,13 +156,83 @@ def adaline(S, T, eta, E) :
         w2[0] = w[0] - 2*eta*(hw(w, xi)-yi)
         w2[1:] = w[1:] - 2*eta*xi*(hw(w, xi)-yi)
         t = t+1
-        condition = t < T and abs(L(w2, S) - L(w, S)) > E
+        condition = t < T and abs(L_adaline(w2, S) - L_adaline(w, S)) > E
+        w = w2
+    return w
+
+def sigma(x) :
+    return 1 / (1 + np.exp(-x))
+
+def L_logistique(w,S) :
+    size_of_space = len(S[0])-1
+    m = len(S)
+    somme = 0
+    for i in range(1,m) :
+        xi = S[i][0:size_of_space]
+        yi = S[i][size_of_space]
+        somme = somme + np.log(1 + np.exp(-yi * hw(w,xi)))
+    return somme/m
+
+# S la base d'apprentissage
+# T le nombre maximum d'itérations
+# eta le pas d'apprentissage
+# E la précision
+def logistique(S, T, eta, E) :
+    size_of_space = len(S[0]) -1
+    w = initw(size_of_space+1)
+    t = 0
+    condition = True
+    while condition :
+        # Choisir un exemple au hasard
+        i = random.randint(0,len(S)-1)
+        yi = S[i][size_of_space]
+        xi = S[i][0:size_of_space]
+        #Mettre à jour les poids
+        w2 = [0] * (size_of_space + 1)
+        w2[0] = w[0] - eta * ( -yi * (1 - sigma(hw(w, xi))))
+        w2[1:] = w[1:] - eta * (-yi * xi * (1 - sigma(hw(w, xi))))
+        t = t+1
+        condition = t < T and abs(L_logistique(w2, S) - L_logistique(w, S)) > E
+        w = w2
+    return w
+
+def L_exponentielle(w,S) :
+    size_of_space = len(S[0])-1
+    m = len(S)
+    somme = 0
+    for i in range(1,m) :
+        xi = S[i][0:size_of_space]
+        yi = S[i][size_of_space]
+        somme = somme + np.exp(-yi * hw(w,xi))
+    return somme/m
+
+# S la base d'apprentissage
+# T le nombre maximum d'itérations
+# eta le pas d'apprentissage
+# E la précision
+def exponentielle(S, T, eta, E) :
+    size_of_space = len(S[0]) -1
+    w = initw(size_of_space+1)
+    t = 0
+    condition = True
+    while condition :
+        # Choisir un exemple au hasard
+        i = random.randint(0,len(S)-1)
+        yi = S[i][size_of_space]
+        xi = S[i][0:size_of_space]
+        #Mettre à jour les poids
+        hwx = hw(w, xi)
+        w2 = [0] * (size_of_space + 1)
+        w2[0] = w[0] - eta * (-yi * np.exp(-yi * hwx))
+        w2[1:] = w[1:] - eta * (-yi * xi * np.exp(-yi * hwx))
+        t = t+1
+        condition = t < T and abs(L_exponentielle(w2, S) - L_exponentielle(w, S)) > E
         w = w2
     return w
 
 # BT la base de test
-# wT le résultat du perceptron
-def testPerceptron(BT, wT) :
+# wT le résultat
+def testMethode(BT, wT) :
     size_of_space = len(BT[0]) -1
     perf = 0.0
     for i in range(0,len(BT)) :
@@ -186,7 +259,7 @@ def choixEta(S,k,T) :
         i = 0
         for eta in eta_range :
             wT = perceptron(learn_list,T,eta)
-            res[i] += testPerceptron(test_list,wT)
+            res[i] += testMethode(test_list,wT)
             i += 1
 
     best_perf = max(res)
@@ -201,7 +274,7 @@ def choixEta(S,k,T) :
 
 
 # Récupération des données, mélange et répartition en un set de test et un set d'apprentissage
-data = getSpamBase()
+data = getMushroom()
 random.shuffle(data)
 cut = len(data)/3
 test_list = data[0:cut]
@@ -209,16 +282,35 @@ learn_list = data[cut:len(data)]
 
 # Lancement de l'algorithme de perceptron renvoyant w0 et w.
 T = 10 * cut
-print "Perceptron"
-wT = perceptron(learn_list,T,0.1)
-perf = testPerceptron(test_list,wT)
-print wT
+eta = 1
+epsilon = 1
+print "--- Paramètres ---"
+print "T : " + str(T)
+print "eta : " + str(eta)
+print "epsilon : " + str(epsilon)
+
+print "--- Performances ---"
+print "PERCEPTRON"
+wT = perceptron(learn_list,T,eta)
+perf = testMethode(test_list,wT)
 print perf
-#choixEta(data,10,T)
+choixEta(data,5,T)
+
 print "ADALINE"
-wT = adaline(learn_list, T, 0.1, 100)
+wT = adaline(learn_list, T, eta, epsilon)
+perf = testMethode(test_list,wT)
+print perf
 print wT
-perf = testPerceptron(test_list,wT)
+
+print "LOGISTIQUE"
+wT = logistique(learn_list, T, eta, epsilon)
+perf = testMethode(test_list,wT)
+print perf
+print wT
+
+print "EXPONENTIELLE"
+wT = exponentielle(learn_list, T, eta, epsilon)
+perf = testMethode(test_list,wT)
 print perf
 
 # http://www.pythonforbeginners.com/files/reading-and-writing-files-in-python
